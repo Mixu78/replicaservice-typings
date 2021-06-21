@@ -10,81 +10,53 @@ type Task = Callback | Instance | Cleanable;
 
 type Str<T> = Extract<T, string>;
 
-type ArrayPath<T, Parent extends string | string[] | undefined = undefined> = _<
+type AddParentArrToChildren<T extends Record<string, unknown>, P extends string[]> = _<
 	{
-		[P in keyof T]: T[P] extends Record<string, unknown>
-			? ArrayPath<T[P], Parent extends undefined ? Str<P> : Parent> | [P]
-			: Parent extends string
-			? [Parent, Str<P>]
-			: Parent extends string[]
-			? "debug"
-			: [P];
+		[K in keyof T]: [...P, Str<K>];
 	}[keyof T]
 >;
 
-type test = ArrayPath<{
-	str: string;
-	foo: {
-		bar: string;
-		baz: {
-			deep: boolean;
-		};
-	};
-}>;
-
-/*
-T = data, Parent = T owner | undefined
-parent:
-	entry is object:
-		parent + path of entry and key
-		path of children
-	entry is other:
-		parent.key
-no parent:
-	entry is object:
-		key
-		key + path of entry
-		path of children
-	entry is other:
-		key
-*/
 /* eslint-disable prettier/prettier */
+type ArrayPath<T extends Record<string, unknown>, Parent extends string[] | undefined = undefined> = _<
+	{
+		[K in keyof T]: Parent extends string[]
+		//String[] parent
+		? T[K] extends Record<string, unknown>
+		? AddParentArrToChildren<T[K], [...Parent, Str<K>]> | ArrayPath<T[K], [...Parent, Str<K>]>
+		: [...Parent, Str<K>]
+		//No parent
+		: T[K] extends Record<string, unknown>
+		? AddParentArrToChildren<T[K], [Str<K>]> | ArrayPath<T[K], [Str<K>]> | [K]
+		: [K];
+	}[keyof T]
+>;
+/* eslint-enable prettier/prettier */
 
-type PPath<T extends Record<string, unknown>> = {
-	[K in keyof T]: /*T[P] extends object ? never :*/ Str<K>;
-}[keyof T];
+type Children<T extends Record<string, unknown>> = _<
+	{
+		[K in keyof T]: Str<K>;
+	}[keyof T]
+>;
 
-type Path<T extends Record<string, unknown>, Parent extends string | undefined = undefined> = _<
+/* eslint-disable prettier/prettier */
+type StringPath<T extends Record<string, unknown>, Parent extends string | undefined = undefined> = _<
 	{
 		[K in keyof T]: Parent extends string
 		//Parent
 		? T[K] extends Record<string, unknown>
-		? `${Parent}.${PPath<T[K]>}` | Path<T[K], `${Parent}.${Str<K>}`>
+		? `${Parent}.${Str<K>}.${Children<T[K]>}` | StringPath<T[K], `${Parent}.${Str<K>}`>
 		: `${Parent}.${Str<K>}`
 		//No parent
 		: T[K] extends Record<string, unknown>
-		? `${Str<K>}.${PPath<T[K]>}` | Path<T[K], Str<K>> | K
+		? `${Str<K>}.${Children<T[K]>}` | StringPath<T[K], Str<K>> | K
 		: K;
 	}[keyof T]
 >;
-//| ArrayPath<T>;
 /* eslint-enable prettier/prettier */
-
-type e = Path<{
-	str: string;
-	foo: {
-		bar: string;
-		baz: {
-			deep: boolean;
-			deeper: {
-				nest: number;
-			};
-		};
-	};
-}>;
+type Path<T extends Record<string, unknown>> = StringPath<T> | ArrayPath<T>;
 
 //TODO type data and mutators
-export interface Replica<D = {}> {
+export interface Replica<D extends Record<string, unknown> = {}> {
 	//shared
 	readonly Data: D;
 	readonly Id: number;
@@ -97,11 +69,11 @@ export interface Replica<D = {}> {
 	RemoveCleanupTask(task: Task): void;
 
 	//built-in mutators
-	SetValue(path: unknown, value: unknown): void;
-	SetValues(path: unknown, values: unknown): void;
-	ArrayInsert(path: unknown, value: unknown): number;
-	ArraySet(path: unknown, index: number, value: unknown): void;
-	ArrayRemove(path: unknown, index: number): unknown;
+	SetValue(path: Path<D>, value: unknown): void;
+	SetValues(path: Path<D>, values: unknown): void;
+	ArrayInsert(path: Path<D>, value: unknown): number;
+	ArraySet(path: Path<D>, index: number, value: unknown): void;
+	ArrayRemove(path: Path<D>, index: number): unknown;
 	Write(functionName: string, ...params: unknown[]): unknown;
 
 	//server
@@ -120,24 +92,24 @@ export interface Replica<D = {}> {
 	//TODO add @client jsdoc
 	ListenToWrite(functionName: string, listener: (...args: unknown[]) => void): RBXScriptConnection;
 	//TODO finish typing this crap
-	ListenToChange(path: unknown, listener: (newValue: unknown, oldValue: unknown) => void): RBXScriptConnection;
-	ListenToNew(path: unknown, listener: (newValue: unknown, oldValue: unknown) => void): RBXScriptConnection;
-	ListenToArrayInsert(path: unknown, listener: (newValue: unknown, oldValue: unknown) => void): RBXScriptConnection;
-	ListenToArraySet(path: unknown, listener: (index: unknown, newValue: unknown) => void): RBXScriptConnection;
+	ListenToChange(path: Path<D>, listener: (newValue: unknown, oldValue: unknown) => void): RBXScriptConnection;
+	ListenToNew(path: Path<D>, listener: (newValue: unknown, oldValue: unknown) => void): RBXScriptConnection;
+	ListenToArrayInsert(path: Path<D>, listener: (newValue: unknown, oldValue: unknown) => void): RBXScriptConnection;
+	ListenToArraySet(path: Path<D>, listener: (index: unknown, newValue: unknown) => void): RBXScriptConnection;
 	ListenToArrayRemove(listener: (oldIndex: unknown, oldValue: unknown) => void): RBXScriptConnection;
 
 	ListenToRaw(listener: (actionName: "SetValue", pathArray: unknown[], value: unknown) => void): RBXScriptConnection;
 	ListenToRaw(
-		listener: (actionName: "SetValues", pathArray: unknown[], values: unknown[]) => void,
+		listener: (actionName: "SetValues", pathArray: ArrayPath<D>[], values: unknown[]) => void,
 	): RBXScriptConnection;
 	ListenToRaw(
-		listener: (actionName: "ArrayInsert", pathArray: unknown[], value: unknown) => void,
+		listener: (actionName: "ArrayInsert", pathArray: ArrayPath<D>[], value: unknown) => void,
 	): RBXScriptConnection;
 	ListenToRaw(
-		listener: (actionName: "ArraySet", pathArray: unknown[], index: number, value: unknown) => void,
+		listener: (actionName: "ArraySet", pathArray: ArrayPath<D>[], index: number, value: unknown) => void,
 	): RBXScriptConnection;
 	ListenToRaw(
-		listener: (actionName: "ArrayRemove", pathArray: unknown[], index: number, oldValue: unknown) => void,
+		listener: (actionName: "ArrayRemove", pathArray: ArrayPath<D>[], index: number, oldValue: unknown) => void,
 	): RBXScriptConnection;
 
 	ListenToChildAdded(listener: (replica: Replica) => void): RBXScriptConnection;
