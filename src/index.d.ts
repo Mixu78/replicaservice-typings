@@ -334,4 +334,4 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	FireServer(...params: unknown[]): void;
 }
 
-export interface ReplicaClassToken {}
+export type ReplicaClassToken = symbol;
