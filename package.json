@@ -1,31 +1,34 @@
 {
-  "name": "@rbxts/replicaservice",
-  "version": "1.0.0",
-  "description": "",
-  "main": "out/init.lua",
-  "scripts": {
-    "prepublishOnly": "rbxtsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "types": "out/index.d.ts",
-  "files": [
-    "out"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@rbxts/compiler-types": "^1.1.1-types.3",
-    "@rbxts/types": "^1.0.493",
-    "@typescript-eslint/eslint-plugin": "^4.26.1",
-    "@typescript-eslint/parser": "^4.26.1",
-    "eslint": "^7.28.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "eslint-plugin-roblox-ts": "^0.0.27",
-    "prettier": "^2.3.1",
-    "typescript": "^4.3.2"
-  }
+	"name": "@rbxts/replicaservice",
+	"version": "1.0.0",
+	"description": "ReplicaService types",
+	"main": "src/init.lua",
+	"homepage": "https://github.com/Mixu78/replicaservice-typings#readme",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Mixu78/replicaservice-typings"
+	},
+	"scripts": {},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"types": "src/index.d.ts",
+	"files": [
+		"src"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"devDependencies": {
+		"@rbxts/compiler-types": "^1.1.1-types.3",
+		"@rbxts/types": "^1.0.493",
+		"@typescript-eslint/eslint-plugin": "^4.26.1",
+		"@typescript-eslint/parser": "^4.26.1",
+		"eslint": "^7.28.0",
+		"eslint-config-prettier": "^8.3.0",
+		"eslint-plugin-prettier": "^3.4.0",
+		"eslint-plugin-roblox-ts": "^0.0.27",
+		"prettier": "^2.3.1",
+		"typescript": "^4.3.2"
+	}
 }

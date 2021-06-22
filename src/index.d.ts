@@ -1,6 +1,9 @@
-import { Task, Array, Path, ArrayPath, PathValue, PathValues } from "util";
+import { Task, Array, Path, ArrayPath, PathValue, PathValues } from "./util";
 
-export type ReplicationSetting = "All" | Map<Player, true> | Player;
+import { ReplicaService } from "./server/ReplicaService";
+import { ReplicaController } from "./shared/ReplicaController";
+
+type ReplicationSetting = "All" | Map<Player, true> | Player;
 
 export interface Replica<D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {}> {
 	/**
@@ -261,4 +264,5 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	FireServer(...params: unknown[]): void;
 }
 
-export type ReplicaClassToken = symbol;
+export declare const ReplicaService: ReplicaService;
+export declare const ReplicaController: ReplicaController;

@@ -1,4 +1,7 @@
-import { Replica, ReplicaClassToken, ReplicationSetting } from "index";
+import { Replica } from "index";
+
+type ReplicaClassToken = symbol;
+type ReplicationSetting = "All" | Map<Player, true> | Player;
 
 /**
  * @server

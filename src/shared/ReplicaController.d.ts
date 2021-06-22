@@ -1,4 +1,6 @@
-import { Replica, ReplicaClassToken } from "index";
+import { Replica } from "index";
+
+type ReplicaClassToken = symbol;
 
 /**
  * @client
