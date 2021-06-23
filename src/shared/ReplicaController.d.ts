@@ -1,4 +1,4 @@
-import { Replica } from "index";
+import { Replica } from "../index";
 
 type ReplicaClassToken = symbol;
 

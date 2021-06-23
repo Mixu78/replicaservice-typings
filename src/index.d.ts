@@ -264,5 +264,11 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	FireServer(...params: unknown[]): void;
 }
 
+/**
+ * @server
+ */
 export declare const ReplicaService: ReplicaService;
+/**
+ * @client
+ */
 export declare const ReplicaController: ReplicaController;
