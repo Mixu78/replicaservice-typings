@@ -20,7 +20,10 @@ export interface ReplicaController {
 	 *
 	 * This is the preferred method of grabbing references to all replicas clients-side.
 	 */
-	ReplicaOfClassCreated(replicaClass: ReplicaClassToken, listener: (replica: Replica) => void): RBXScriptConnection;
+	ReplicaOfClassCreated: (
+		replicaClass: ReplicaClassToken,
+		listener: (replica: Replica) => void,
+	) => RBXScriptConnection;
 	/**
 	 * Fired every time a replica is created client-side.
 	 */
@@ -28,7 +31,7 @@ export interface ReplicaController {
 	/**
 	 * Returns a `Replica` that is loaded client-side with a `Replica.Id` that matches `replicaId`.
 	 */
-	GetReplicaById(replicaId: Replica["Id"]): Replica | undefined;
+	GetReplicaById: (replicaId: Replica["Id"]) => Replica | undefined;
 	/**
 	 * Requests the server to start sending replica data.
 	 *
@@ -39,5 +42,5 @@ export interface ReplicaController {
 	 * you should create a centralized module that connects `Replica` creation listeners before `.RequestData()` and
 	 * provides those local scripts with the replica references they need.
 	 */
-	RequestData(): void;
+	RequestData: () => void;
 }

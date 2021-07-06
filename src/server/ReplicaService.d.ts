@@ -30,12 +30,12 @@ export interface ReplicaService {
 	 * Class tokens for a particular class_name can only be created once
 	 * \- this helps the developer avoid Replica class name collisions when merging codebases.
 	 */
-	NewClassToken(className: string): ReplicaClassToken;
+	NewClassToken: (className: string) => ReplicaClassToken;
 	/**
 	 * Creates a replica and immediately replicates to select active players based on
 	 * replication settings of this `Replica` or the parent `Replica`.
 	 */
-	NewReplica<D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {}>(replicaParams: {
+	NewReplica: <D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {}>(replicaParams: {
 		/**
 		 * Sets` Replica.Class` to the string provided in `ReplicaService.NewClassToken(className)`
 		 */
@@ -75,5 +75,5 @@ export interface ReplicaService {
 		 * The WriteLib parameter is individual for every Replica.
 		 */
 		WriteLib?: ModuleScript;
-	}): Replica<D>;
+	}) => Replica<D>;
 }
