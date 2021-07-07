@@ -75,5 +75,5 @@ export interface ReplicaService {
 		 * The WriteLib parameter is individual for every Replica.
 		 */
 		WriteLib?: ModuleScript;
-	}) => Replica<D>;
+	}) => Replica<D, T>;
 }
