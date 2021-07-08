@@ -1,6 +1,14 @@
 import { Replica } from "../index";
 
-type ReplicaClassToken = symbol;
+type ReplicaClassToken<T extends keyof Replicas> =
+	| symbol
+	| {
+			/**
+			 * @deprecated
+			 * @hidden
+			 */
+			__originalName: T;
+	  };
 
 /**
  * @client
@@ -20,9 +28,9 @@ export interface ReplicaController {
 	 *
 	 * This is the preferred method of grabbing references to all replicas clients-side.
 	 */
-	ReplicaOfClassCreated: (
-		replicaClass: ReplicaClassToken,
-		listener: (replica: Replica) => void,
+	ReplicaOfClassCreated: <C extends keyof Replicas>(
+		replicaClass: C,
+		listener: (replica: Replica<Replicas[C]["Data"], Replicas[C]["Tags"]>) => void,
 	) => RBXScriptConnection;
 	/**
 	 * Fired every time a replica is created client-side.

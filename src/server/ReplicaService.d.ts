@@ -1,6 +1,14 @@
 import { Replica } from "../index";
 
-type ReplicaClassToken = symbol;
+type ReplicaClassToken<T extends keyof Replicas> =
+	| symbol
+	| {
+			/**
+			 * @deprecated
+			 * @hidden
+			 */
+			__originalName: T;
+	  };
 type ReplicationSetting = "All" | Map<Player, true> | Player;
 
 /**
@@ -30,16 +38,20 @@ export interface ReplicaService {
 	 * Class tokens for a particular class_name can only be created once
 	 * \- this helps the developer avoid Replica class name collisions when merging codebases.
 	 */
-	NewClassToken: (className: string) => ReplicaClassToken;
+	NewClassToken: <N extends keyof Replicas>(className: N) => ReplicaClassToken<N>;
 	/**
 	 * Creates a replica and immediately replicates to select active players based on
 	 * replication settings of this `Replica` or the parent `Replica`.
 	 */
-	NewReplica: <D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {}>(replicaParams: {
+	NewReplica: <
+		N extends keyof Replicas,
+		D extends Replicas[N]["Tags"],
+		T extends Replicas[N]["Data"],
+	>(replicaParams: {
 		/**
 		 * Sets` Replica.Class` to the string provided in `ReplicaService.NewClassToken(className)`
 		 */
-		ClassToken: ReplicaClassToken;
+		ClassToken: ReplicaClassToken<N>;
 		/**
 		 * (Default: {} empty table)
 		 * A dictionary of identifiers.

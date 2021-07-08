@@ -3,6 +3,10 @@ import { Task, Array, Path, ArrayPath, PathValue, PathValues } from "./util";
 import { ReplicaService } from "./server/ReplicaService";
 import { ReplicaController } from "./shared/ReplicaController";
 
+declare global {
+	interface Replicas {}
+}
+
 type ReplicationSetting = "All" | Map<Player, true> | Player;
 
 export interface Replica<D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {}> {
@@ -20,7 +24,7 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	/**
 	 * The `className` parameter that has been used for the ReplicaClassToken used to create this `Replica`.
 	 */
-	readonly Class: string;
+	readonly Class: keyof Replicas;
 	/**
 	 * A custom static Replica identifier mainly used for referencing affected game instances.
 	 * Only used for properties that will not change for the rest of the Replica's lifespan.
