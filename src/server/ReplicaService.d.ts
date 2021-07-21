@@ -45,8 +45,8 @@ export interface ReplicaService {
 	 */
 	NewReplica: <
 		N extends keyof Replicas,
-		D extends Replicas[N]["Tags"],
-		T extends Replicas[N]["Data"],
+		D extends Replicas[N]["Data"],
+		T extends Replicas[N]["Tags"],
 	>(replicaParams: {
 		/**
 		 * Sets` Replica.Class` to the string provided in `ReplicaService.NewClassToken(className)`
