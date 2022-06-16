@@ -9,7 +9,11 @@ declare global {
 
 type ReplicationSetting = "All" | Map<Player, true> | Player;
 
-export interface Replica<D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {}> {
+// https://stackoverflow.com/questions/58764853/typescript-remove-first-argument-from-a-function
+type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
+
+export interface Replica<D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {},
+	W extends Record<string, unknown> | undefined = {}> {
 	/**
 	 * Table representing the state wrapped by the `Replica`.
 	 * Note that after wrapping a table with a `Replica` you may no longer write directly to that table
@@ -37,6 +41,11 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	 * **Nested replicas** will never become **top level replicas** and vice versa.
 	 */
 	readonly Parent: Replica | undefined;
+	/**
+	 * (strawberriaaa)
+	 * Experimental WriteLib typings
+	 */
+	readonly WriteLib: W;
 	/**
 	 * An array of replicas parented to this `Replica`.
 	 */
@@ -76,13 +85,12 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	 * Performs `table.remove(t, index)` where `t` is a numeric sequential array `table` located in `path`.
 	 */
 	ArrayRemove<P extends Path<D>>(path: P, index: number): Array<PathValue<D, P>>[number];
-	//TODO writelib types?
 	/**
 	 * Calls a function within a [WriteLib](https://madstudioroblox.github.io/ReplicaService/api/#writelib)
 	 * that has been assigned to this `Replica`
 	 * for both the server and all clients that have this `Replica` replicated to them.
 	 */
-	Write(functionName: string, ...params: unknown[]): unknown;
+	Write<P extends Path<W>>(functionName: P, ...params: Parameters<OmitFirstArg<PathValue<W, P>>>): ReturnType<PathValue<W, P>>;
 
 	/**
 	 * Changes the `Parent` of the `Replica`.
@@ -151,14 +159,13 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	Destroy(): void;
 
 	//TODO add @client jsdoc
-	//TODO writelib types?
 	/**
 	 * Listens to WriteLib mutator functions being triggered.
 	 * See [WriteLib](https://madstudioroblox.github.io/ReplicaService/api/#writelib) section for examples.
 	 *
 	 * @client
 	 */
-	ListenToWrite(functionName: string, listener: (...args: unknown[]) => void): RBXScriptConnection;
+	ListenToWrite<P extends Path<W>>(functionName: P, listener: (...args: Parameters<OmitFirstArg<PathValue<W, P>>>) => void): RBXScriptConnection;
 	/**
 	 * Creates a listener which gets triggered by `Replica:SetValue()` calls.
 	 *
