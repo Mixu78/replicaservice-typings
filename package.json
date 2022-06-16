@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/replicaservice",
-	"version": "1.0.0-ts.4",
+	"version": "1.0.0-ts.5",
 	"description": "ReplicaService types",
 	"main": "src/init.lua",
 	"homepage": "https://github.com/Mixu78/replicaservice-typings#readme",
