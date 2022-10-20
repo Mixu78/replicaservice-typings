@@ -1,4 +1,4 @@
-import { Task, Array, Path, ArrayPath, PathValue, PathValues } from "./util";
+import { Task, Array, Path, ArrayPath, PathValue, PathValues, OmitFirstParam } from "./util";
 
 import { ReplicaService } from "./server/ReplicaService";
 import { ReplicaController } from "./shared/ReplicaController";
@@ -9,7 +9,11 @@ declare global {
 
 type ReplicationSetting = "All" | Map<Player, true> | Player;
 
-export interface Replica<D extends Record<string, unknown> = {}, T extends Record<string, unknown> = {}> {
+export interface Replica<
+	D extends Record<string, unknown> = {},
+	T extends Record<string, unknown> = {},
+	W extends Record<string, unknown> = {},
+> {
 	/**
 	 * Table representing the state wrapped by the `Replica`.
 	 * Note that after wrapping a table with a `Replica` you may no longer write directly to that table
@@ -58,31 +62,43 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	/**
 	 * Sets any individual value within `Replica.Data` to `value`.
 	 * Parameter `value` can be `nil` and will set the value located in `path` to `nil`.
+	 *
+	 * @server
 	 */
 	SetValue<P extends Path<D>>(path: P, value: PathValue<D, P>): void;
 	/**
 	 * Sets multiple keys located in `path` to specified `values`
+	 *
+	 * @server
 	 */
 	SetValues<P extends Path<D>>(path: P, values: Partial<PathValues<D, P>>): void;
 	/**
 	 * Performs `table.insert(t, value)` where `t` is a numeric sequential array `table` located in `path`.
+	 *
+	 * @server
 	 */
 	ArrayInsert<P extends Path<D>>(path: P, value: Array<PathValue<D, P>>[number]): number;
 	/**
 	 * Performs `t[index] = value` where `t` is a numeric sequential array `table` located in `path`.
+	 *
+	 * @server
 	 */
 	ArraySet<P extends Path<D>>(path: P, index: number, value: Array<PathValue<D, P>>[number]): void;
 	/**
 	 * Performs `table.remove(t, index)` where `t` is a numeric sequential array `table` located in `path`.
+	 *
+	 * @server
 	 */
 	ArrayRemove<P extends Path<D>>(path: P, index: number): Array<PathValue<D, P>>[number];
-	//TODO writelib types?
+
 	/**
 	 * Calls a function within a [WriteLib](https://madstudioroblox.github.io/ReplicaService/api/#writelib)
 	 * that has been assigned to this `Replica`
 	 * for both the server and all clients that have this `Replica` replicated to them.
+	 *
+	 * @server
 	 */
-	Write(functionName: string, ...params: unknown[]): unknown;
+	Write<P extends Path<W>>(functionName: P, ...params: Parameters<OmitFirstParam<PathValue<W, P>>>): unknown;
 
 	/**
 	 * Changes the `Parent` of the `Replica`.
@@ -150,15 +166,16 @@ export interface Replica<D extends Record<string, unknown> = {}, T extends Recor
 	 */
 	Destroy(): void;
 
-	//TODO add @client jsdoc
-	//TODO writelib types?
 	/**
 	 * Listens to WriteLib mutator functions being triggered.
 	 * See [WriteLib](https://madstudioroblox.github.io/ReplicaService/api/#writelib) section for examples.
 	 *
 	 * @client
 	 */
-	ListenToWrite(functionName: string, listener: (...args: unknown[]) => void): RBXScriptConnection;
+	ListenToWrite<P extends Path<W>>(
+		functionName: P,
+		listener: (...params: Parameters<OmitFirstParam<PathValue<W, P>>>) => void,
+	): RBXScriptConnection;
 	/**
 	 * Creates a listener which gets triggered by `Replica:SetValue()` calls.
 	 *

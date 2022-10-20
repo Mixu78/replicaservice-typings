@@ -30,7 +30,7 @@ export interface ReplicaController {
 	 */
 	ReplicaOfClassCreated: <C extends keyof Replicas>(
 		replicaClass: C,
-		listener: (replica: Replica<Replicas[C]["Data"], Replicas[C]["Tags"]>) => void,
+		listener: (replica: Replica<Replicas[C]["Data"], Replicas[C]["Tags"], Replicas[C]["WriteLib"]>) => void,
 	) => RBXScriptConnection;
 	/**
 	 * Fired every time a replica is created client-side.

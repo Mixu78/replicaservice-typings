@@ -47,6 +47,7 @@ export interface ReplicaService {
 		N extends keyof Replicas,
 		D extends Replicas[N]["Data"],
 		T extends Replicas[N]["Tags"],
+		W extends Replicas[N]["WriteLib"],
 	>(replicaParams: {
 		/**
 		 * Sets` Replica.Class` to the string provided in `ReplicaService.NewClassToken(className)`
@@ -87,5 +88,5 @@ export interface ReplicaService {
 		 * The WriteLib parameter is individual for every Replica.
 		 */
 		WriteLib?: ModuleScript;
-	}) => Replica<D, T>;
+	}) => Replica<D, T, W>;
 }
