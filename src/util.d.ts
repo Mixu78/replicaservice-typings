@@ -13,7 +13,45 @@ export type Array<T> = T extends any[] ? T : never[];
 
 export type OmitFirstParam<T> = T extends (x: any, ...rest: infer Rest) => infer R ? (...params: Rest) => R : never;
 
-type f = OmitFirstParam<() => void>;
+type DataTypes =
+	| Axes
+	| BrickColor
+	| CFrame
+	| CatalogSearchParams
+	| Color3
+	| ColorSequence
+	| ColorSequenceKeypoint
+	| DateTime
+	| DockWidgetPluginGuiInfo
+	| Enum
+	| EnumItem
+	| Enums
+	| Faces
+	| FloatCurveKey
+	| Font
+	| Instance
+	| NumberRange
+	| NumberSequence
+	| NumberSequenceKeypoint
+	| OverlapParams
+	| PathWaypoint
+	| PhysicalProperties
+	| RBXScriptConnection
+	| RBXScriptSignal
+	| Random
+	| Ray
+	| RaycastParams
+	| RaycastResult
+	| Rect
+	| Region3
+	| Region3int16
+	| TweenInfo
+	| UDim
+	| UDim2
+	| Vector2
+	| Vector2int16
+	| Vector3
+	| Vector3int16;
 
 type TupleIndexes<T extends readonly any[], Acc = never> = T extends readonly [infer _, ...infer Rest]
 	? //@ts-expect-error T can be indexed with "length"
@@ -23,6 +61,8 @@ type Indexes<T extends readonly any[]> = T extends readonly [infer _, ...infer _
 
 type ArrayPathImpl<T, Acc extends any[]> = T extends readonly any[]
 	? Indexes<T>
+	: T extends DataTypes
+	? Acc
 	: T extends Record<string, any>
 	? {
 			[K in keyof T]: [K] | [K, ...ArrayPathImpl<T[K], Acc>];
