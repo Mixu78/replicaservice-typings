@@ -4,12 +4,9 @@ import { ReplicaService } from "./server/ReplicaService";
 import { ReplicaController } from "./shared/ReplicaController";
 
 export interface Replica<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  D extends Record<string, any> = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  T extends Record<string, any> = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  WL extends Record<string, any> = {},
+  D extends Record<string, unknown> = {},
+  T extends Record<string, unknown> = {},
+  WL extends Record<string, unknown> = {},
 > {
   /**
    * Table representing the state wrapped by the `Replica`. Note that after wrapping a table with a `Replica` you may no longer write directly to that table (doing so would potentially desynchronize state among clients and in some cases even break code) \- all changes must be applied through [mutators](https://madstudioroblox.github.io/ReplicaService/api/#built-in-mutators).
@@ -102,7 +99,7 @@ export interface Replica<
   /**
    * Sets any individual `value` within `Replica.Data` to `value`. Parameter `value` can be `nil` and will set the value located in `path` to `nil`.
    */
-  SetValue<P extends Path<D, "None">>(path: P, value: PathValue<D, P>): void;
+  SetValue<P extends Path<D, "Main">>(path: P, value: PathValue<D, P>): void;
   /**
    * Sets multiple keys located in `path` to specified `values`.
    * ```ts
@@ -116,15 +113,15 @@ export interface Replica<
    * print(Replica.Data.Fruit.Oranges); // 2
    * ```
    */
-  SetValues<P extends Path<D, "Object">>(path: P, values: PathValues<D, P>): void;
+  SetValues<P extends Path<D, "Objects">>(path: P, values: PathValues<D, P>): void;
   /**
    * Performs `table.insert(t, value)` where `t` is a numeric sequential array `table` located in `path`.
    */
-  ArrayInsert<P extends Path<D, "Array">>(path: P, value: PathValue<D, P> extends Array<infer T> ? T : never): number;
+  ArrayInsert<P extends Path<D, "Arrays">>(path: P, value: PathValue<D, P> extends Array<infer T> ? T : never): number;
   /**
    * Performs `t[index] = value` where `t` is a numeric sequential array `table` located in `path`.
    */
-  ArraySet<P extends Path<D, "Array">>(
+  ArraySet<P extends Path<D, "Arrays">>(
     path: P,
     index: number,
     value: PathValue<D, P> extends Array<infer T> ? T : never,
@@ -132,12 +129,12 @@ export interface Replica<
   /**
    * Performs `table.remove(t, index)` where `t` is a numeric sequential array `table` located in `path`.
    */
-  ArrayRemove<P extends Path<D, "Array">>(path: P, index: number): PathValue<D, P> extends Array<infer T> ? T : never;
+  ArrayRemove<P extends Path<D, "Arrays">>(path: P, index: number): PathValue<D, P> extends Array<infer T> ? T : never;
 
   /**
    * Calls a function within a [WriteLib](https://madstudioroblox.github.io/ReplicaService/api/#writelib) that has been assigned to this `Replica` for both the server and all clients that have this `Replica` replicated to them.
    */
-  Write<P extends StringPath<WL, "Callback">>(
+  Write<P extends StringPath<WL, "Callbacks">>(
     functionName: P,
     ...params: Parameters<OmitFirstParam<StringPathValue<WL, P>>>
   ): ReturnType<StringPathValue<WL, P>>;
@@ -183,14 +180,14 @@ export interface Replica<
   /**
    * Listens to WriteLib mutator functions being triggered. See [WriteLib](https://madstudioroblox.github.io/ReplicaService/api/#writelib) section for examples.
    */
-  ListenToWrite<P extends StringPath<WL, "Callback">>(
+  ListenToWrite<P extends StringPath<WL, "Callbacks">>(
     functionName: P,
     listener: (...params: Parameters<OmitFirstParam<StringPathValue<WL, P>>>) => void,
   ): RBXScriptConnection;
   /**
    * Creates a listener which gets triggered by `Replica:SetValue()` calls.
    */
-  ListenToChange<P extends Path<D, "None">>(
+  ListenToChange<P extends Path<D, "Main">>(
     path: P,
     listener: (newValue: PathValue<D, P>, oldValue: PathValue<D, P>) => void,
   ): RBXScriptConnection;
@@ -201,21 +198,21 @@ export interface Replica<
   /**
    * Creates a listener which gets triggered by `Replica:ArrayInsert()` calls.
    */
-  ListenToArrayInsert<P extends Path<D, "Array">>(
+  ListenToArrayInsert<P extends Path<D, "Arrays">>(
     path: P,
     listener: (newIndex: number, newValue: PathValue<D, P> extends Array<infer T> ? T : never) => void,
   ): RBXScriptConnection;
   /**
    * Creates a listener which gets triggered by `Replica:ArraySet()` calls.
    */
-  ListenToArraySet<P extends Path<D, "Array">>(
+  ListenToArraySet<P extends Path<D, "Arrays">>(
     path: P,
     listener: (index: number, newValue: PathValue<D, P> extends Array<infer T> ? T : never) => void,
   ): RBXScriptConnection;
   /**
    * Creates a listener which gets triggered by `Replica:ArrayRemove()` calls.
    */
-  ListenToArrayRemove<P extends Path<D, "Array">>(
+  ListenToArrayRemove<P extends Path<D, "Arrays">>(
     path: P,
     listener: (oldIndex: number, oldValue: PathValue<D, P> extends Array<infer T> ? T : never) => void,
   ): RBXScriptConnection;
@@ -235,28 +232,28 @@ export interface Replica<
    */
   ListenToRaw<A extends "SetValue" | "SetValues" | "ArrayInsert" | "ArraySet" | "ArrayRemove">(
     listener: A extends "SetValue"
-      ? (action: "SetValue", path: ArrayPath<D, "None">, value: PathValue<D, ArrayPath<D, "None">>) => void
+      ? (action: "SetValue", path: ArrayPath<D, "Main">, value: PathValue<D, ArrayPath<D, "Main">>) => void
       : A extends "SetValues"
-      ? (action: "SetValues", path: ArrayPath<D, "Object">, values: PathValues<D, ArrayPath<D, "Object">>) => void
+      ? (action: "SetValues", path: ArrayPath<D, "Objects">, values: PathValues<D, ArrayPath<D, "Objects">>) => void
       : A extends "ArrayInsert"
       ? (
           action: "ArrayInsert",
-          path: ArrayPath<D, "Array">,
-          value: PathValue<D, ArrayPath<D, "Array">> extends Array<infer T> ? T : never,
+          path: ArrayPath<D, "Arrays">,
+          value: PathValue<D, ArrayPath<D, "Arrays">> extends Array<infer T> ? T : never,
         ) => void
       : A extends "ArraySet"
       ? (
           action: "ArraySet",
-          path: ArrayPath<D, "Array">,
+          path: ArrayPath<D, "Arrays">,
           index: number,
-          value: PathValue<D, ArrayPath<D, "Array">> extends Array<infer T> ? T : never,
+          value: PathValue<D, ArrayPath<D, "Arrays">> extends Array<infer T> ? T : never,
         ) => void
       : A extends "ArrayRemove"
       ? (
           action: "ArrayRemove",
-          path: ArrayPath<D, "Array">,
+          path: ArrayPath<D, "Arrays">,
           index: number,
-          oldValue: PathValue<D, ArrayPath<D, "Array">> extends Array<infer T> ? T : never,
+          oldValue: PathValue<D, ArrayPath<D, "Arrays">> extends Array<infer T> ? T : never,
         ) => void
       : never,
   ): RBXScriptConnection;
