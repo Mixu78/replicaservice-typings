@@ -1,5 +1,5 @@
-import { Replica } from "../Index.d";
-import { ReplicaClassToken, ReplicationTypes } from "../Util.d";
+import { ReplicaClassToken, ReplicationTypes } from "../util";
+import { Replica } from "../index";
 
 export interface ReplicaService {
   /**

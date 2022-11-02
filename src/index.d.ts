@@ -1,11 +1,14 @@
-import { ArrayPath, Path, PathValue, PathValues, ReplicationTypes, StringPath, StringPathValue, Task } from "./Util.d";
+import { ArrayPath, Path, PathValue, PathValues, ReplicationTypes, StringPath, StringPathValue, Task } from "./util";
 
-import { ReplicaService } from "./Server/ReplicaService.d";
-import { ReplicaController } from "./Shared/ReplicaController.d";
+import { ReplicaService } from "./server/ReplicaService";
+import { ReplicaController } from "./shared/ReplicaController";
 
 export interface Replica<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   D extends Record<string, any> = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends Record<string, any> = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   WL extends Record<string, any> = {},
 > {
   /**

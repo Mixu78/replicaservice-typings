@@ -1,6 +1,7 @@
 declare global {
   interface Replicas {}
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type OmitFirstParam<C> = C extends (toOmit: any, ...rest: infer Rest) => infer R ? (...params: Rest) => R : never;
 }
 
@@ -49,8 +50,11 @@ export type RecursionBreakerTypes =
   | number
   | boolean
   | symbol
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | Map<any, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | Set<any>
   | Callback
   | RobloxDataTypes;
@@ -67,9 +71,12 @@ type ValueFilterTypes = "None" | "Object" | "Array" | "Callback";
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...0[]];
 type DefaultDepth = 10;
 
-export type ArrayPath<T, VF extends ValueFilterTypes, P extends (string | number)[] = [], D extends number = DefaultDepth> = [
-  D,
-] extends [never]
+export type ArrayPath<
+  T,
+  VF extends ValueFilterTypes,
+  P extends (string | number)[] = [],
+  D extends number = DefaultDepth,
+> = [D] extends [never]
   ? never
   : IsRealObject<T> extends true
   ? {
@@ -83,7 +90,8 @@ export type ArrayPath<T, VF extends ValueFilterTypes, P extends (string | number
             ? [...P, K] | ArrayPath<T[K], "Object", [...P, K], Prev[D]>
             : never
           : VF extends "Array"
-          ? T[K] extends any[]
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            T[K] extends any[]
             ? [...P, K]
             : IsRealObject<T[K]> extends true
             ? ArrayPath<T[K], "Array", [...P, K], Prev[D]>
@@ -124,7 +132,8 @@ export type StringPath<T, VF extends ValueFilterTypes, P extends string = "", D 
             ? `${P}${K}` | StringPath<T[K], "Object", `${P}${K}.`, Prev[D]>
             : never
           : VF extends "Array"
-          ? T[K] extends any[]
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            T[K] extends any[]
             ? `${P}${K}`
             : IsRealObject<T[K]> extends true
             ? StringPath<T[K], "Array", `${P}${K}.`, Prev[D]>

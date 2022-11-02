@@ -1,4 +1,4 @@
-import { Replica } from "../Index.d";
+import { Replica } from "../index";
 
 export interface ReplicaController {
   /**
