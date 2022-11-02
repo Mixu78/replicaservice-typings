@@ -1,126 +1,163 @@
-# replicaservice-typings
-roblox-ts typings for MadStudioRoblox's ReplicaService
+# 🧩 ReplicaService Typings
 
-# Usage
-```ts
-	//Client side, errors if used on server!
-	import { ReplicaController } from "@rbxts/replicaservice"
+> `roblox-ts` typings for ReplicaService made by MadStudio.
 
-	//Server side, errors if used on client!
-	import { ReplicaService } from "@rbxts/replicaservice"
+## 🔢 Table of Contents
 
-	//Somewhere in the project, preferrably a .d.ts file:
-	declare global {
-		interface Replicas {
-			ReplicaName: {
-				Data: {};
-				Tags: {};
-				WriteLib: {};
-			}
-		}
-	}
-	//Modify the Replicas interface to have each Replica class name you use as a key,
-	//and an object with Data, Tags and WriteLib as the value. These objects should then contain the intended data, tags and optional WriteLib
-	//for the replica.
+- [📰 About This Package](#-about-this-package)
+- [🔗 TypeScript Example](#-typescript-example)
+- [❓ Frequently Asked Questions](#-frequently-asked-questions)
+- [📜 Documentation](#-documentation)
+- [⚠️ Support](#-support)
+
+## 📰 About This Package
+
+ReplicaService is a selective state replication system. ReplicaService helps you make server code which changes and replicates any state to select clients.
+
+Assume that a [state (Wikipedia)](<https://en.wikipedia.org/wiki/State_(computer_science)>) is any kind of data that has a present version and may also change at any time in the future, as many times as necessary. The data about a player which you load up during gameplay or save to the DataStore is a state. The color of a part, text shown on a users screen and furniture placed in a player owned house are all states - ReplicaService helps you make server-side code to control and replicate any state to all clients at once or only a select few.
+
+A state (in layman’s terms, a lua table that may contain almost anything) is wrapped with a Replica - like the name implies, it creates a [replica (identical copy)](https://en.wikipedia.org/wiki/Replica) of the wrapped state on the client-side of users you want to see that state. You may define clients who will see that replica, call mutator functions on the Replica to change the state (will change contents of the wrapped table) and make the clients listen to those changes or simply read the state whenever necessary. Furthermore, a Replica can be parented to another Replica (with a few exceptions discussed later), unloaded for select clients and, of course, destroyed.
+
+What's good about ReplicaService:
+
+- **Just replication, whatever you need replicated** - The goal of ReplicaService is to streamline custom Roblox object replication from server to client. ReplicaService avoids being redundant and tackles as few concerns as possible.
+
+- **Chunks & player houses** - Selective replication allows you to make a "custom [StreamingEnabled](https://developer.roblox.com/en-us/articles/content-streaming) implementation" with full server-side control - load in nearby chunks, load in interiors and furniture only when the player enters those areas!
+
+- **"It don't go brrrrr"** - ReplicaService is completely event-based and only tells the client the data that changes - it keeps the network usage low and conserves computer resources.
+
+- **Go big, go small** - Use custom mutators for minimal bandwith and gain access to client-side listeners that react to bulk changes instead of individual values. Use built-in mutators for rapid implementations while still keeping your network use very low.
+
+## 🔗 TypeScript Example
+
+`default.project.json`
+
+```json
+{
+  "name": "typescript-example",
+  "globIgnorePaths": ["**/package.json", "**/tsconfig.json"],
+  "tree": {
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "$path": "out/Shared",
+      "Runtime": {
+        "$path": "include",
+        "node_modules": {
+          "$className": "Folder",
+          "@rbxts": {
+            "$path": "node_modules/@rbxts"
+          }
+        }
+      }
+    },
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "out/Server"
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "out/Client"
+      }
+    }
+  }
+}
 ```
 
-# WriteLib example
-shared/replicas.d.ts
+`src/Types/Replicas.d.ts`
+
 ```ts
-import WriteLib from "./WriteLib";
+import { Replica } from "@rbxts/replicaservice";
+import PlayerDataReplicaWriteLib from "../Shared/WriteLibs/PlayerData";
 
 declare global {
-	interface Replicas {
-		SomeReplica: {
-			Data: {};
-			Tags: {};
-			WriteLib: typeof WriteLib;
-		};
-	}
+  interface Replicas {
+    PlayerData: {
+      Data: {
+        Money: number;
+      };
+      Tags: {};
+      WriteLib: typeof PlayerDataReplicaWriteLib;
+    };
+  }
 }
 
-export type SomeReplica = Replica<
-	Replicas["SomeReplica"]["Data"],
-	Replicas["SomeReplica"]["Tags"],
-	Replicas["SomeReplica"]["WriteLib"]
+export type PlayerDataReplica = Replica<
+  Replicas["PlayerData"]["Data"],
+  Replicas["PlayerData"]["Tags"],
+  Replicas["PlayerData"]["WriteLib"]
 >;
 ```
 
-shared/WriteLib.ts
+`src/Shared/WriteLibs/PlayerData.ts`
+
 ```ts
-import { SomeReplica } from "examples/shared/replicas";
+import { PlayerDataReplica } from "../../Types/Replicas.d";
 
 export = {
-	RestockAll: (replica: SomeReplica) => {
-		replica.SetValue(["Cans"], 10);
-	},
+  ChangeMoney: (replica: PlayerDataReplica, method: "Add" | "Sub", value: number) => {
+    const FinalValue = method === "Add" ? replica.Data.Money + value : replica.Data.Money - value;
+    if (FinalValue < 0) return replica.SetValue(["Money"], 0);
+    replica.SetValue(["Money"], FinalValue);
+  },
 };
 ```
 
-server/main.ts
+`src/Server/Main.server.ts`
+
 ```ts
 import { ReplicaService } from "@rbxts/replicaservice";
+import { Players, ReplicatedStorage } from "@rbxts/services";
 
-const ReplicatedStorage = game.GetService("ReplicatedStorage");
-const shared = ReplicatedStorage.FindFirstChild("TS") as Folder; //This may vary depending on your rojo configuration
-const writeLib = shared.FindFirstChild("WriteLib") as ModuleScript;
+const PlayerDataReplicaWriteLib: ModuleScript = ReplicatedStorage.WaitForChild("WriteLibs").WaitForChild(
+  "PlayerData",
+) as ModuleScript; // This varies depending on your "default.project.json" paths.
 
-const token = ReplicaService.NewClassToken("SomeReplica");
+Players.PlayerAdded.Connect((player: Player) => {
+  const PlayerDataReplica = ReplicaService.NewReplica({
+    ClassToken: ReplicaService.NewClassToken("PlayerData"),
+    Data: {
+      Money: 500,
+    },
+    Replication: player,
+    WriteLib: PlayerDataReplicaWriteLib,
+  });
 
-const replica = ReplicaService.NewReplica({
-	ClassToken: token,
-	Data: {
-		Cans: 5,
-	},
-	WriteLib: writeLib,
+  while (task.wait(1)) {
+    PlayerDataReplica.Write("ChangeMoney", "Add", 500);
+    // This example uses WriteLib feature of ReplicaService, but if you don't want/don't need to use a WriteLib, then you can do: PlayerDataReplica.SetValue(["Money"], PlayerDataReplica.Data.Money + 500)
+  }
 });
-
-replica.Write(["RestockAll"]);
-
 ```
 
-# [ReplicaService Basic Usage](https://madstudioroblox.github.io/ReplicaService/tutorial/basic_usage/) translated to TS
+`src/Client/Main.client.ts`
 
-A .d.ts file
-```ts
-declare global {
-	interface Replicas {
-		TestReplica: {
-			Data: { Value: number };
-			Tags: {};
-			WriteLib: {};
-		};
-	}
-}
-```
-
-Server
-```ts
-import { ReplicaService } from "@rbxts/replicaservice";
-
-const test_replica = ReplicaService.NewReplica({
-	ClassToken: ReplicaService.NewClassToken("TestReplica"),
-	Data: { Value: 0 },
-	Replication: "All",
-})
-
-while (wait(1)) {
-	test_replica.SetValue(["Value"], test_replica.Data.Value + 1);
-}
-```
-
-Client
 ```ts
 import { ReplicaController } from "@rbxts/replicaservice";
-ReplicaController.ReplicaOfClassCreated("TestReplica", (replica) => {
-	print("TestReplica received! Value:", replica.Data.Value);
 
-	replica.ListenToChange(["Value"], (new_value) => {
-		print("Value changed:", new_value);
-	});
+ReplicaController.ReplicaOfClassCreated("PlayerData", (replica) => {
+  print(`PlayerData replica received! Received player money: ${replica.Data.Money}`);
+
+  replica.ListenToChange(["Money"], (newValue) => {
+    print(`Money changed: ${newValue}`);
+  });
 });
 
-ReplicaController.RequestData(); // This function should only be called once
-//   in the entire codebase! Read the documentation for more info.
-
+ReplicaController.RequestData(); // This function should only be called once in the entire codebase! Read the documentation for more information.
 ```
+
+## ❓ Frequently Asked Questions
+
+1. **My editor features (autocomplete, others) are laggy, what can I do?** Reopen your code editor (or if you're using Visual Studio Code, restart the TypeScript server), if it's still laggy, contact me in the `roblox-ts` server.
+
+## 📜 Documentation
+
+Visit the following website to go to the official ReplicaService documentation: https://madstudioroblox.github.io/ReplicaService/
+
+## ⚠️ Support
+
+If you are having issues with typings, join `roblox-ts` Discord server and mention any of the collaborators ([Mixu_78](https://discord.com/users/255257883250393091), or [Sandy Stone](https://discord.com/users/1018447375079063573)) with your issue and I'll try to help the maximum I can.
+
+If you are having issues with ReplicaService and not the typings, [file an issue in the GitHub repository](https://github.com/MadStudioRoblox/ReplicaService/issues).
