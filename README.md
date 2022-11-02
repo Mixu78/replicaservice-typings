@@ -160,7 +160,7 @@ ReplicaController.RequestData(); // This function should only be called once in 
 
 ## ❔ Frequently Asked Questions
 
-1. **My editor features (autocomplete, others) are laggy, what can I do?** Reopen your code editor (or if you're using Visual Studio Code, restart the TypeScript server), if it's still laggy, contact me in the `roblox-ts` server.
+1. **My editor features (autocomplete, others) are laggy, what can I do?** Reopen your code editor (or if you're using Visual Studio Code, restart the TypeScript server), if it's still laggy, contact any of the collaborators in the `roblox-ts` server.
 2. **I can't access a key in my object that is inside 35 keys!** Read the [limitations](#-limitations) and [recommendations](#-recommendations).
 
 ## 📜 Documentation
