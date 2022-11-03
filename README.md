@@ -1,17 +1,17 @@
-# 🧩 ReplicaService Typings
+# ReplicaService Typings
 
 > `roblox-ts` typings for ReplicaService made by MadStudio.
 
-## 🔢 Table of Contents
+## Table of Contents
 
-- [🔗 TypeScript Example](#-typescript-example)
-- [✨ Recommendations](#-recommendations)
-- [⛔ Limitations](#-limitations)
-- [❔ Frequently Asked Questions](#-frequently-asked-questions)
-- [📜 Documentation](#-documentation)
-- [⚠️ Support](#-support)
+- [TypeScript Example](#typescript-example)
+- [Recommendations](#recommendations)
+- [Limitations](#limitations)
+- [Frequently Asked Questions](#frequently-asked-questions)
+- [Documentation](#documentation)
+- [Support](#support)
 
-## 🔗 TypeScript Example
+## TypeScript Example
 
 `src/Types/Replicas.d.ts`
 
@@ -44,8 +44,15 @@ export type PlayerDataReplica = Replica<
 import { PlayerDataReplica } from "../../Types/Replicas.d";
 
 export = {
-  ChangeMoney: (replica: PlayerDataReplica, method: "Add" | "Sub", value: number) => {
-    const FinalValue = method === "Add" ? replica.Data.Money + value : replica.Data.Money - value;
+  ChangeMoney: (
+    replica: PlayerDataReplica,
+    method: "Add" | "Sub",
+    value: number
+  ) => {
+    const FinalValue =
+      method === "Add"
+        ? replica.Data.Money + value
+        : replica.Data.Money - value;
     if (FinalValue < 0) return replica.SetValue(["Money"], 0);
     replica.SetValue(["Money"], FinalValue);
   },
@@ -58,9 +65,9 @@ export = {
 import { ReplicaService } from "@rbxts/replicaservice";
 import { Players, ReplicatedStorage } from "@rbxts/services";
 
-const PlayerDataReplicaWriteLib: ModuleScript = ReplicatedStorage.WaitForChild("WriteLibs").WaitForChild(
-  "PlayerData",
-) as ModuleScript; // This varies depending on your "default.project.json" paths.
+const PlayerDataReplicaWriteLib: ModuleScript = ReplicatedStorage.WaitForChild(
+  "WriteLibs"
+).WaitForChild("PlayerData") as ModuleScript; // This varies depending on your "default.project.json" paths.
 
 Players.PlayerAdded.Connect((player: Player) => {
   const PlayerDataReplica = ReplicaService.NewReplica({
@@ -85,7 +92,9 @@ Players.PlayerAdded.Connect((player: Player) => {
 import { ReplicaController } from "@rbxts/replicaservice";
 
 ReplicaController.ReplicaOfClassCreated("PlayerData", (replica) => {
-  print(`PlayerData replica received! Received player money: ${replica.Data.Money}`);
+  print(
+    `PlayerData replica received! Received player money: ${replica.Data.Money}`
+  );
 
   replica.ListenToChange(["Money"], (newValue) => {
     print(`Money changed: ${newValue}`);
@@ -95,24 +104,24 @@ ReplicaController.ReplicaOfClassCreated("PlayerData", (replica) => {
 ReplicaController.RequestData(); // This function should only be called once in the entire codebase! Read the documentation for more information.
 ```
 
-## ✨ Recommendations
+## Recommendations
 
 - Make your `Replica.Data` simple and small without too many keys inside another keys.
 
-## ⛔ Limitations
+## Limitations
 
 - Paths (`StringPath` and `ArrayPath`) can only access **21 keys** of an object (this was added as a fix to the issue "Type instantiation is excessively deep and possibly infinite").
 
-## ❔ Frequently Asked Questions
+## Frequently Asked Questions
 
 1. **My editor features (autocomplete, others) are laggy, what can I do?** Reopen your code editor (or if you're using Visual Studio Code, restart the TypeScript server), if it's still laggy, contact any of the collaborators in the `roblox-ts` server.
 2. **I can't access a key in my object that is inside 35 keys!** Read the [limitations](#-limitations) and [recommendations](#-recommendations).
 
-## 📜 Documentation
+## Documentation
 
 Visit the following website to go to the official ReplicaService documentation: https://madstudioroblox.github.io/ReplicaService/
 
-## ⚠️ Support
+## Support
 
 If you are having issues with typings, join `roblox-ts` Discord server and mention any of the collaborators ([Mixu_78](https://discord.com/users/255257883250393091), or [Sandy Stone](https://discord.com/users/1018447375079063573)) with your issue and we'll try to help the maximum we can.
 

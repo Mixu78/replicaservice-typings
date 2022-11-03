@@ -47,7 +47,7 @@ export type MainTypes = PrimitiveTypes | SpecialTypes | RobloxDataTypes;
 
 export type Cleanable = { Destroy(): void } | { Disconnect(): void };
 export type Task = Callback | Instance | Cleanable;
-export type ReplicationTypes = "All" | Map<Player, boolean> | Player;
+export type ReplicationTypes = "All" | Map<Player, true> | Player;
 export type ReplicaClassToken<C extends keyof Replicas> = {
 	Class: C;
 };

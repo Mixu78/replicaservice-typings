@@ -210,7 +210,10 @@ export interface Replica<
 	/**
 	 * Creates a listener which gets triggered by `Replica:SetValue()` calls when a new key is created inside `path` (value previously equal to `nil`). Note that this listener can't reference the key itself inside `path`.
 	 */
-	ListenToNewKey(path: string, listener: (newValue: unknown, newKey: string) => void): RBXScriptConnection;
+	ListenToNewKey<P extends Path<D, "Main">>(
+		path: P,
+		listener: (newValue: PathValue<D, P>, newKey: string) => void,
+	): RBXScriptConnection;
 	/**
 	 * Creates a listener which gets triggered by `Replica:ArrayInsert()` calls.
 	 */

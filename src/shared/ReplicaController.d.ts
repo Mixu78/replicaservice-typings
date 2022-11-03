@@ -33,9 +33,9 @@ export interface ReplicaController {
 	 */
 	NewReplicaSignal: RBXScriptSignal<(replica: Replica) => void>;
 	/**
-	 * Returns a `Replica` that is loaded client\-side with a `Replica.Id` that matches `id`.
+	 * Returns a `Replica` that is loaded client\-side with a `Replica.Id` that matches `replicaId`.
 	 */
-	GetReplicaById: (id: Replica["Id"]) => Replica | undefined;
+	GetReplicaById: (replicaId: Replica["Id"]) => Replica | undefined;
 	/**
 	 * Requests the server to start sending replica data.
 	 *
