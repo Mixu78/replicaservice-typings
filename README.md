@@ -1,126 +1,128 @@
-# replicaservice-typings
-roblox-ts typings for MadStudioRoblox's ReplicaService
+# ReplicaService Typings
 
-# Usage
+> `roblox-ts` typings for ReplicaService made by MadStudio.
+
+## Table of Contents
+
+- [TypeScript Example](#typescript-example)
+- [Recommendations](#recommendations)
+- [Limitations](#limitations)
+- [Frequently Asked Questions](#frequently-asked-questions)
+- [Documentation](#documentation)
+- [Support](#support)
+
+## TypeScript Example
+
+`src/Types/Replicas.d.ts`
+
 ```ts
-	//Client side, errors if used on server!
-	import { ReplicaController } from "@rbxts/replicaservice"
-
-	//Server side, errors if used on client!
-	import { ReplicaService } from "@rbxts/replicaservice"
-
-	//Somewhere in the project, preferrably a .d.ts file:
-	declare global {
-		interface Replicas {
-			ReplicaName: {
-				Data: {};
-				Tags: {};
-				WriteLib: {};
-			}
-		}
-	}
-	//Modify the Replicas interface to have each Replica class name you use as a key,
-	//and an object with Data, Tags and WriteLib as the value. These objects should then contain the intended data, tags and optional WriteLib
-	//for the replica.
-```
-
-# WriteLib example
-shared/replicas.d.ts
-```ts
-import WriteLib from "./WriteLib";
+import { Replica } from "@rbxts/replicaservice";
+import PlayerDataReplicaWriteLib from "../Shared/WriteLibs/PlayerData";
 
 declare global {
-	interface Replicas {
-		SomeReplica: {
-			Data: {};
-			Tags: {};
-			WriteLib: typeof WriteLib;
-		};
-	}
+  interface Replicas {
+    PlayerData: {
+      Data: {
+        Money: number;
+      };
+      Tags: {};
+      WriteLib: typeof PlayerDataReplicaWriteLib;
+    };
+  }
 }
 
-export type SomeReplica = Replica<
-	Replicas["SomeReplica"]["Data"],
-	Replicas["SomeReplica"]["Tags"],
-	Replicas["SomeReplica"]["WriteLib"]
+export type PlayerDataReplica = Replica<
+  Replicas["PlayerData"]["Data"],
+  Replicas["PlayerData"]["Tags"],
+  Replicas["PlayerData"]["WriteLib"]
 >;
 ```
 
-shared/WriteLib.ts
+`src/Shared/WriteLibs/PlayerData.ts`
+
 ```ts
-import { SomeReplica } from "examples/shared/replicas";
+import { PlayerDataReplica } from "../../Types/Replicas.d";
 
 export = {
-	RestockAll: (replica: SomeReplica) => {
-		replica.SetValue(["Cans"], 10);
-	},
+  ChangeMoney: (
+    replica: PlayerDataReplica,
+    method: "Add" | "Sub",
+    value: number
+  ) => {
+    const FinalValue =
+      method === "Add"
+        ? replica.Data.Money + value
+        : replica.Data.Money - value;
+    if (FinalValue < 0) return replica.SetValue(["Money"], 0);
+    replica.SetValue(["Money"], FinalValue);
+  },
 };
 ```
 
-server/main.ts
+`src/Server/Main.server.ts`
+
 ```ts
 import { ReplicaService } from "@rbxts/replicaservice";
+import { Players, ReplicatedStorage } from "@rbxts/services";
 
-const ReplicatedStorage = game.GetService("ReplicatedStorage");
-const shared = ReplicatedStorage.FindFirstChild("TS") as Folder; //This may vary depending on your rojo configuration
-const writeLib = shared.FindFirstChild("WriteLib") as ModuleScript;
+const PlayerDataReplicaWriteLib: ModuleScript = ReplicatedStorage.WaitForChild(
+  "WriteLibs"
+).WaitForChild("PlayerData") as ModuleScript; // This varies depending on your "default.project.json" paths.
 
-const token = ReplicaService.NewClassToken("SomeReplica");
+Players.PlayerAdded.Connect((player: Player) => {
+  const PlayerDataReplica = ReplicaService.NewReplica({
+    ClassToken: ReplicaService.NewClassToken("PlayerData"),
+    Data: {
+      Money: 500,
+    },
+    Replication: player,
+    WriteLib: PlayerDataReplicaWriteLib,
+  });
 
-const replica = ReplicaService.NewReplica({
-	ClassToken: token,
-	Data: {
-		Cans: 5,
-	},
-	WriteLib: writeLib,
+  while (task.wait(1)) {
+    PlayerDataReplica.Write("ChangeMoney", "Add", 500);
+    // This example uses WriteLib feature of ReplicaService, but if you don't want/don't need to use a WriteLib, then you can do: PlayerDataReplica.SetValue(["Money"], PlayerDataReplica.Data.Money + 500)
+  }
 });
-
-replica.Write(["RestockAll"]);
-
 ```
 
-# [ReplicaService Basic Usage](https://madstudioroblox.github.io/ReplicaService/tutorial/basic_usage/) translated to TS
+`src/Client/Main.client.ts`
 
-A .d.ts file
-```ts
-declare global {
-	interface Replicas {
-		TestReplica: {
-			Data: { Value: number };
-			Tags: {};
-			WriteLib: {};
-		};
-	}
-}
-```
-
-Server
-```ts
-import { ReplicaService } from "@rbxts/replicaservice";
-
-const test_replica = ReplicaService.NewReplica({
-	ClassToken: ReplicaService.NewClassToken("TestReplica"),
-	Data: { Value: 0 },
-	Replication: "All",
-})
-
-while (wait(1)) {
-	test_replica.SetValue(["Value"], test_replica.Data.Value + 1);
-}
-```
-
-Client
 ```ts
 import { ReplicaController } from "@rbxts/replicaservice";
-ReplicaController.ReplicaOfClassCreated("TestReplica", (replica) => {
-	print("TestReplica received! Value:", replica.Data.Value);
 
-	replica.ListenToChange(["Value"], (new_value) => {
-		print("Value changed:", new_value);
-	});
+ReplicaController.ReplicaOfClassCreated("PlayerData", (replica) => {
+  print(
+    `PlayerData replica received! Received player money: ${replica.Data.Money}`
+  );
+
+  replica.ListenToChange(["Money"], (newValue) => {
+    print(`Money changed: ${newValue}`);
+  });
 });
 
-ReplicaController.RequestData(); // This function should only be called once
-//   in the entire codebase! Read the documentation for more info.
-
+ReplicaController.RequestData(); // This function should only be called once in the entire codebase! Read the documentation for more information.
 ```
+
+## Recommendations
+
+- Make your `Replica.Data` simple and small without too many keys inside another keys.
+
+## Limitations
+
+- Paths (`StringPath` and `ArrayPath`) can only access **21 keys** of an object (this was added as a fix to the issue "Type instantiation is excessively deep and possibly infinite").
+
+## Frequently Asked Questions
+
+1. **My editor features (autocomplete, others) are laggy, what can I do?** Reopen your code editor (or if you're using Visual Studio Code, restart the TypeScript server), if it's still laggy, contact any of the collaborators in the `roblox-ts` server.
+2. **I can't access a key in my object that is inside 35 keys!** Read the [limitations](#-limitations) and [recommendations](#-recommendations).
+
+## Documentation
+
+Visit the following website to go to the official ReplicaService documentation: https://madstudioroblox.github.io/ReplicaService/
+
+## Support
+
+If you are having issues with typings, join `roblox-ts` Discord server and mention any of the collaborators ([Mixu_78](https://discord.com/users/255257883250393091), or [Sandy Stone](https://discord.com/users/1018447375079063573)) with your issue and we'll try to help the maximum we can.
+
+If you are having issues with ReplicaService and not the typings, [file an issue in the GitHub repository](https://github.com/MadStudioRoblox/ReplicaService/issues).
