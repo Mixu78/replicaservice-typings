@@ -31,7 +31,7 @@ export interface ReplicaController {
 	 * })
 	 * ```
 	 */
-	NewReplicaSignal: RBXScriptSignal<(replica: Replica) => void>;
+	NewReplicaSignal: RBXScriptSignal<(replica: Replica<Replicas[keyof Replicas]["Data"], Replicas[keyof Replicas]["Tags"], Replicas[keyof Replicas]["WriteLib"]>) => void>;
 	/**
 	 * Returns a `Replica` that is loaded client\-side with a `Replica.Id` that matches `replicaId`.
 	 */
