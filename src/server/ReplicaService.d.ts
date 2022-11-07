@@ -25,12 +25,7 @@ export interface ReplicaService {
 	/**
 	 * Creates a replica and immediately replicates to select [active players](https://madstudioroblox.github.io/ReplicaService/api/#replicaserviceactiveplayers) based on replication settings of this `Replica` or the parent `Replica`.
 	 */
-	NewReplica: <
-		C extends keyof Replicas,
-		D extends Replicas[C]["Data"],
-		T extends Replicas[C]["Tags"],
-		WL extends Replicas[C]["WriteLib"],
-	>(replicaParams: {
+	NewReplica: <C extends keyof Replicas>(replicaParams: {
 		/**
 		 * Sets `Replica.Class` to the string provided in `ReplicaService.NewClassToken(className)`.
 		 */
@@ -38,11 +33,11 @@ export interface ReplicaService {
 		/**
 		 * (Default: `{}` empty table) A table representing a state. Using `Profile.Data` from [ProfileService](https://madstudioroblox.github.io/ProfileService/) is valid!
 		 */
-		Data?: D;
+		Data?: Replicas[C]["Data"];
 		/**
 		 * (Default: `{}` empty table) A dictionary of identifiers. Use `Tags` to let the client know which game objects the `Replica` belongs to: `Tags: {Part: part, Player: player, ...}`. Tags can't be changed after the `Replica` is created.
 		 */
-		Tags?: T;
+		Tags?: Replicas[C]["Tags"];
 		/**
 		 * (Default: `{}` not replicated to anyone) Pass `"All"` to replicate to everyone in the game and everyone who will join the game later. Pass `{Player: true, Player: true, ...}` dictionary or `Player` instance for selective replication.
 		 */
@@ -55,5 +50,5 @@ export interface ReplicaService {
 		 * (Default: `nil`) Provide a `ModuleScript` (not the return of `require()`) to assign write functions (mutator functions) to this replica. The `WriteLib` parameter is individual for every `Replica`.
 		 */
 		WriteLib?: ModuleScript;
-	}) => Replica<D, T, WL>;
+	}) => Replica<C>;
 }
