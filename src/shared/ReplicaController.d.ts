@@ -21,7 +21,7 @@ export interface ReplicaController {
 	 */
 	ReplicaOfClassCreated: <C extends keyof Replicas>(
 		replicaClass: C,
-		listener: (replica: Replica<Replicas[C]["Data"], Replicas[C]["Tags"], Replicas[C]["WriteLib"]>) => void,
+		listener: (replica: Replica<C>) => void,
 	) => RBXScriptConnection;
 	/**
 	 * Fired every time a replica is created client\-side.
@@ -31,11 +31,11 @@ export interface ReplicaController {
 	 * })
 	 * ```
 	 */
-	NewReplicaSignal: RBXScriptSignal<(replica: Replica<Replicas[keyof Replicas]["Data"], Replicas[keyof Replicas]["Tags"], Replicas[keyof Replicas]["WriteLib"]>) => void>;
+	NewReplicaSignal: RBXScriptSignal<(replica: Replica) => void>;
 	/**
 	 * Returns a `Replica` that is loaded client\-side with a `Replica.Id` that matches `replicaId`.
 	 */
-	GetReplicaById: (replicaId: Replica["Id"]) => Replica | undefined;
+	GetReplicaById: (replicaId: number) => Replica | undefined;
 	/**
 	 * Requests the server to start sending replica data.
 	 *

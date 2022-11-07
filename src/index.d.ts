@@ -13,7 +13,13 @@ import {
 import { ReplicaService } from "./server/ReplicaService";
 import { ReplicaController } from "./shared/ReplicaController";
 
-export interface Replica<
+export type Replica<C extends keyof Replicas = keyof Replicas> = ReplicaInstance<
+	Replicas[C]["Data"],
+	Replicas[C]["Tags"],
+	Replicas[C]["WriteLib"]
+>;
+
+export interface ReplicaInstance<
 	D extends Record<string, unknown> = {},
 	T extends Record<string, unknown> = {},
 	WL extends Record<string, unknown> = {},
@@ -287,7 +293,7 @@ export interface Replica<
 	/**
 	 * Returns a first child `Replica` of specified class if one exists.
 	 */
-	FindFirstChildOfClass(replicaClass: Replica["Class"]): Replica | undefined;
+	FindFirstChildOfClass<C extends keyof Replicas>(replicaClass: C): Replica<C> | undefined;
 	/**
 	 * Simulates the behaviour of [RemoteEvent.OnClientEvent](https://create.roblox.com/docs/reference/engine/classes/RemoteEvent#OnClientEvent).
 	 */

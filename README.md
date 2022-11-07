@@ -31,11 +31,7 @@ declare global {
   }
 }
 
-export type PlayerDataReplica = Replica<
-  Replicas["PlayerData"]["Data"],
-  Replicas["PlayerData"]["Tags"],
-  Replicas["PlayerData"]["WriteLib"]
->;
+export type PlayerDataReplica = Replica<"PlayerData">;
 ```
 
 `src/Shared/WriteLibs/PlayerData.ts`
